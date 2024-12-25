@@ -34,7 +34,6 @@ F1 Data Tracker is a comprehensive web application that provides real-time insig
 ## API Configuration
 Create a `.env` file in the root directory with:
 ```
-VITE_OPENF1_API_BASE_URL=https://api.openf1.org
 VITE_ARGAST_API_BASE_URL=https://api.argast.com
 ```
 
