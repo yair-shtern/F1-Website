@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Formula1:wght@400;700&display=swap');
+
+body {
+  font-family: 'Formula1', sans-serif;
+  background-color: #F1F1F1;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+body::-webkit-scrollbar {
+  display: none;  /* Hides the scrollbar */
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E10600;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2D7FBF;
+}
+
+/* Responsive typography */
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
