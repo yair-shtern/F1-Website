@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: process.env.PORT || 3000, // Use the Render-assigned port or default to 3000
+    host: '0.0.0.0',  // Ensure it listens on all network interfaces
+    port: process.env.PORT || 3000,  // Use the Render environment variable or fallback to 3000
     open: true,
     proxy: {
       // Proxy for Wikipedia API requests
