@@ -35,8 +35,8 @@ class ErgastService {
 
   static async getRaceSchedule(year) {
     try {
-      const response = await axios.get(`${BASE_URL}/${year}`)
-      return response.data
+      const response = await axios.get(`${BASE_URL}/${year}.json`)
+      return response.data.MRData.RaceTable.Races
     } catch (error) {
       console.error('Error fetching race schedule:', error)
       throw error
@@ -45,8 +45,8 @@ class ErgastService {
 
   static async getRaceResults(year, round) {
     try {
-      const response = await axios.get(`${BASE_URL}/${year}/${round}/results`)
-      return response.data
+      const response = await axios.get(`${BASE_URL}/${year}/${round}/results.json`)
+      return response.data.MRData.RaceTable.Races[0]
     } catch (error) {
       console.error('Error fetching race results:', error)
       throw error

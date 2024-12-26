@@ -76,6 +76,7 @@ const TeamStandingsPage = () => {
         if (!xmlDoc) throw new Error('Failed to parse XML');
         const teamStandings = await XMLParser.extractTeamStandings(xmlDoc);
         if (!teamStandings) throw new Error('Failed to parse team data');
+
         setStandings(teamStandings);
         setLoading(false);
       } catch (err) {

@@ -20,20 +20,22 @@ const SchedulePage = ({ initialYear = "2024" }) => {
       setLoading(true);
       try {
         const response = await ErgastService.getRaceSchedule(year);
-        const xmlDoc = XMLParser.parseXML(response);
+        // const xmlDoc = XMLParser.parseXML(response);
 
-        if (!xmlDoc) throw new Error("Failed to parse XML");
+        // if (!xmlDoc) throw new Error("Failed to parse XML");
 
-        const raceSchedule = await XMLParser.extractRaceSchedule(xmlDoc);
-        if (!raceSchedule) throw new Error("Failed to parse race data");
-
-        raceSchedule.forEach((race, index)=>{
-          race.year = year,
-          race.round = index + 1
-        })
-        
-        console.log(raceSchedule);
-        setSchedule(raceSchedule);
+        // const raceSchedule = await XMLParser.extractRaceSchedule(xmlDoc);
+        // if (!raceSchedule) throw new Error("Failed to parse race data");
+        for (let index = 0; index < response.length; index++) {
+          const race = response[index];
+          race.circuitImage = await XMLParser.getCiruitImg(
+              race.Circuit.Location.country,
+              race.Circuit.Location.locality
+          );
+          race.round = index + 1;
+        }
+        console.log(response)
+        setSchedule(response);
         setError(null);
       } catch (error) {
         console.error("Failed to fetch race schedule:", error);
@@ -47,7 +49,7 @@ const SchedulePage = ({ initialYear = "2024" }) => {
   }, [year]);
 
   const handleRaceSelect = (race) => {
-    navigate(`/results/${race.year}/${race.round}`, {
+    navigate(`/results/${race.season}/${race.round}`, {
       state: { race } 
     });
   };
@@ -93,7 +95,7 @@ const SchedulePage = ({ initialYear = "2024" }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {schedule.map((race, index) => (
                 <RaceCard
-                  key={race.circuit.circuitId || index}
+                  key={race.Circuit.circuitId || index}
                   race={race}
                   index={index}
                   onSelect={() => handleRaceSelect(race)}

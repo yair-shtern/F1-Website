@@ -18,7 +18,7 @@ const RaceCard = ({ race, index, onSelect }) => {
   const details = [
     {
       icon: MapPin,
-      text: `${race.location.locality}, ${race.location.country}`,
+      text: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
     },
     {
       icon: Calendar,
@@ -32,7 +32,7 @@ const RaceCard = ({ race, index, onSelect }) => {
       icon: Link,
       text: (
         <a
-          href={race.wikipediaUrl}
+          href={race.url}
           target="_blank"
           rel="noopener noreferrer"
           className="text-blue-600 hover:underline"
@@ -47,7 +47,7 @@ const RaceCard = ({ race, index, onSelect }) => {
     <Card
       imageSrc={race.circuitImage}
       imageAlt={race.raceName}
-      badgeContent={`Round ${index + 1}`}
+      badgeContent={<div className="bg-white/90 backdrop-blur-sm rounded-full top-4 left-4 px-3 py-1">Round {index + 1}</div>}
       title={race.raceName}
       details={details}
       onCardClick={onSelect}

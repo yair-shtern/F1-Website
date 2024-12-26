@@ -212,69 +212,38 @@ class XMLParser {
     }
   }
   
-  static async extractRaceSchedule(xmlDoc) {
-    const raceElements = xmlDoc.getElementsByTagName("Race");
-    if (raceElements.length === 0) {
-      console.error("No Race data found in XML.");
-      return [];
-    }
-  
-    const raceSchedules = new Array()
-  
-    for (let race of raceElements) {
-      // Get country and locality
-      let country = race.getElementsByTagName("Country")[0]?.textContent || 'N/A';
-      country = country === 'UK' ? 'great britain' : country
-      const locality = race.getElementsByTagName("Locality")[0]?.textContent || 'N/A';
-  
-      let imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${country.replace(' ', '_')}`;
-  
-      let isValid = await this.isValidImage(imageUrl);
+  static async getCiruitImg(country, locality) {
+    country = country === 'UK' ? 'great britain' : country
+    let imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${country.replace(' ', '_')}`;
+
+    let isValid = await this.isValidImage(imageUrl);
+    if (isValid) {
+      console.log(`Found ${country} image!`);
+    } else {
+      // Second attempt: replace underscores with spaces
+      imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${country.replace('_', ' ')}`;
+      isValid = await this.isValidImage(imageUrl);
       if (isValid) {
-        console.log(`Found ${country} image!`);
+        console.log(`Found image with space-replacement for ${country}!`);
       } else {
-        // Second attempt: replace underscores with spaces
-        imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${country.replace('_', ' ')}`;
+        // Fallback to locality if both fail
+        imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${locality.replace(' ', '_')}`;
         isValid = await this.isValidImage(imageUrl);
         if (isValid) {
-          console.log(`Found image with space-replacement for ${country}!`);
+          console.log(`Found ${locality} image!`);
         } else {
-          // Fallback to locality if both fail
-          imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${locality.replace(' ', '_')}`;
+          // Final fallback: replace underscores with spaces for locality
+          imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${locality.replace('_', ' ')}`;
           isValid = await this.isValidImage(imageUrl);
           if (isValid) {
-            console.log(`Found ${locality} image!`);
+            console.log(`Found image with space-replacement for ${locality}!`);
           } else {
-            // Final fallback: replace underscores with spaces for locality
-            imageUrl = `https://media.formula1.com/image/upload/f_auto,c_limit,w_1440,q_auto/f_auto/q_auto/content/dam/fom-website/2018-redesign-assets/Racehub%20header%20images%2016x9/${locality.replace('_', ' ')}`;
-            isValid = await this.isValidImage(imageUrl);
-            if (isValid) {
-              console.log(`Found image with space-replacement for ${locality}!`);
-            } else {
-              console.log(`No valid image found for ${country} and ${locality}.`);
-            }
+            console.log(`No valid image found for ${country} and ${locality}.`);
           }
         }
       }
-  
-      raceSchedules.push({
-        wikipediaUrl: race.getAttribute("url") || 'N/A',
-        date: race.getElementsByTagName("Date")[0]?.textContent || 'N/A',
-        time: race.getElementsByTagName("Time")[0]?.textContent || 'N/A',
-        circuitName: race.getElementsByTagName("CircuitName")[0]?.textContent || 'N/A',
-        location: {
-          locality: locality,
-          country: country
-        },
-        circuit: {
-          circuitId: race.getElementsByTagName("Circuit")[0]?.getAttribute("circuitId") || 'N/A',
-          circuitRef: race.getElementsByTagName("Circuit")[0]?.getAttribute("circuitRef") || 'N/A',
-        },
-        circuitImage: imageUrl
-      });
     }
-    
-    return raceSchedules;
+    return imageUrl;
   }
   
     
@@ -340,7 +309,7 @@ class XMLParser {
       constructorId = constructorId === "sauber"? "kick_sauber" : constructorId
       const url = constructorElement?.getAttribute("url") || 'N/A';
       const logo = `https://media.formula1.com/image/upload/f_auto,c_limit,q_75,w_1320/content/dam/fom-website/2018-redesign-assets/team%20logos/${constructorId.replace('_', ' ')}`;
-      const flagUrls = this.getFlagUrls(nationality);
+      const flagUrl = `https://flagsapi.com/${nationality}/flat/64.png`;
 
       return {
         teamName,
@@ -351,7 +320,7 @@ class XMLParser {
         constructorId,
         url,
         logo,
-        flagUrls
+        flagUrl
       };
     })
     );
