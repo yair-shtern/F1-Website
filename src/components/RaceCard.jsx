@@ -46,6 +46,7 @@ const RaceCard = ({ race, index, onSelect }) => {
   return (
     <Card
       imageSrc={race.circuitImage}
+      fallbackImageSrc={'../../public/images/race-circuit.png'}
       imageAlt={race.raceName}
       badgeContent={<div className="bg-white/90 backdrop-blur-sm rounded-full top-4 left-4 px-3 py-1">Round {index + 1}</div>}
       title={race.raceName}

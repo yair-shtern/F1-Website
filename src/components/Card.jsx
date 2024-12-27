@@ -7,6 +7,7 @@ const Card = ({
   title,
   details,
   onCardClick,
+  fallbackImageSrc
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -26,6 +27,11 @@ const Card = ({
             src={imageSrc}
             alt={imageAlt || "Card Image"}
             className="w-full h-auto object-contain"
+            onError={(e) => {
+              if (fallbackImageSrc) {
+                e.target.src = fallbackImageSrc;
+              }
+            }}
           />
         )}
         {badgeContent && (

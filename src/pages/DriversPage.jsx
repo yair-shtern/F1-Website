@@ -3,18 +3,32 @@ import Layout from '../components/Layout';
 import Card from '../components/Card';
 import XMLParser from '../utils/xmlParser';
 import ErgastService from '../services/ergastService';
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Calendar } from "lucide-react";
+
+const FALLBACK_DRIVER_IMAGE = "https://media.formula1.com/d_driver_fallback_image.png/content/dam/fom-website/drivers";
 
 const DriversPage = () => {
   const [drivers, setDrivers] = useState([]);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [years, setYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(null);
   const cardRef = useRef(null);
 
   useEffect(() => {
+    // Initialize available years
+    const currentYear = new Date().getFullYear();
+    setYears(Array.from({ length: currentYear - 1949 }, (_, i) => currentYear - i));
+    setSelectedYear(currentYear);
+  }, []);
+
+  useEffect(() => {
     const fetchAllDriverData = async () => {
+      if (!selectedYear) return;
+      
+      setLoading(true);
       try {
-        const response = await ErgastService.getDrivers('2024');
+        const response = await ErgastService.getDrivers(selectedYear.toString());
         const xmlDoc = XMLParser.parseXML(response);
         if (!xmlDoc) throw new Error('Failed to parse XML');
         
@@ -41,7 +55,7 @@ const DriversPage = () => {
     };
 
     fetchAllDriverData();
-  }, []);
+  }, [selectedYear]);
 
   useEffect(() => {
     const handleEscapeKey = (event) => {
@@ -70,24 +84,50 @@ const DriversPage = () => {
     };
   }, [selectedDriver]);
 
-  if (loading) return <Layout><div className="flex items-center justify-center h-screen">Loading Drivers...</div></Layout>;
+  if (loading) return <Layout title={`F1 Drivers ${selectedYear}`}><div className="flex items-center justify-center h-screen">Loading Drivers...</div></Layout>;
 
   const sortedDrivers = [...drivers].sort((a, b) => a.driverNumber - b.driverNumber);
 
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-gray-100 to-white">
-        <header className="bg-gradient-to-r from-f1-red to-f1-blue py-12 mb-8 shadow-lg">
-          <h1 className="text-5xl text-center font-bold text-white">F1 Drivers 2024</h1>
-        </header>
+  const renderYearSelection = () => (
+    <div className="bg-gray-100 p-6 rounded-lg shadow-md mb-8">
+      <div className="flex justify-center">
+        <div>
+          <label
+            htmlFor="yearSelect"
+            className="block text-lg font-medium text-gray-700 mb-2 flex items-center space-x-2 justify-center"
+          >
+            <Calendar size={18} className="text-gray-600" />
+            <span>Season</span>
+          </label>
+          <select
+            id="yearSelect"
+            className="w-40 p-2 rounded-lg border-gray-300 shadow-sm text-sm text-center appearance-none focus:ring-blue-500 focus:border-blue-500"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+          >
+            {years.map((year) => (
+              <option key={year} value={year} className="px-2">
+                {year} Season
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+  );
 
+  return (
+    <Layout title={`F1 Drivers ${selectedYear}`}>
+      <div className="min-h-screen bg-gradient-to-b from-gray-100 to-white">
         <main className="container mx-auto px-4 pb-8">
+          {renderYearSelection()}
           <div className="grid md:grid-cols-3 gap-8">
             {sortedDrivers.map((driver) => (
               <div key={driver.driverId} className="transform hover:scale-105 transition-transform">
                 <Card
                   imageSrc={driver.imageUrl}
                   imageAlt={`${driver.givenName} ${driver.familyName}`}
+                  fallbackImageSrc={FALLBACK_DRIVER_IMAGE}
                   badgeContent={
                     <img
                       src={driver.numberImage}
@@ -129,42 +169,41 @@ const DriversPage = () => {
                     src={selectedDriver.profileImageUrl}
                     alt={selectedDriver.givenName}
                     className="w-48 h-48 object-cover rounded-xl"
+                    onError={(e) => {
+                      e.target.src = FALLBACK_DRIVER_IMAGE;
+                    }}
                   />
-            <div className="flex-1">
-  <div className="grid grid-cols-3 gap-6 items-center">
-    <div className="col-span-2">
-      <h2 className="text-3xl font-bold text-f1-red">
-        {selectedDriver.givenName} {selectedDriver.familyName}
-      </h2>
-      <div className="mt-4 space-y-2">
-  <p><span className="font-bold">Country:</span> {selectedDriver.nationality}</p>
-  <p><span className="font-bold">Number:</span> {selectedDriver.driverNumber}</p>
-  <p className="flex items-center">
-    <span className="font-bold mr-2">Wikipedia Page:</span>
-    <a
-      href={selectedDriver.wikipediaUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center text-blue-600 hover:underline"
-    >
-      <ExternalLink size={18} />
-    </a>
-  </p>
-</div>
-
-    </div>
-    
-    {/* Number Image (Takes up 1/3 of the space) */}
-    <div className="flex justify-center">
-      <img
-        src={selectedDriver.numberImage}
-        alt={`#${selectedDriver.driverNumber}`}
-        className="w-full h-auto max-w-[150px] object-contain"
-      />
-    </div>
-  </div>
-</div>
-
+                  <div className="flex-1">
+                    <div className="grid grid-cols-3 gap-6 items-center">
+                      <div className="col-span-2">
+                        <h2 className="text-3xl font-bold text-f1-red">
+                          {selectedDriver.givenName} {selectedDriver.familyName}
+                        </h2>
+                        <div className="mt-4 space-y-2">
+                          <p><span className="font-bold">Country:</span> {selectedDriver.nationality}</p>
+                          <p><span className="font-bold">Number:</span> {selectedDriver.driverNumber}</p>
+                          <p className="flex items-center">
+                            <span className="font-bold mr-2">Wikipedia Page:</span>
+                            <a
+                              href={selectedDriver.wikipediaUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-blue-600 hover:underline"
+                            >
+                              <ExternalLink size={18} />
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-center">
+                        <img
+                          src={selectedDriver.numberImage}
+                          alt={`#${selectedDriver.driverNumber}`}
+                          className="w-full h-auto max-w-[150px] object-contain"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
